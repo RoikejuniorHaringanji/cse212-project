@@ -1,65 +1,59 @@
-﻿﻿﻿public class PriorityQueue
+﻿﻿﻿using System;
+using System.Collections.Generic;
+
+public class PriorityQueue
 {
-    private List<PriorityItem> _queue = new();
-
-    /// <summary>
-    /// Add a new value to the queue with an associated priority.  The
-    /// node is always added to the back of the queue regardless of 
-    /// the priority.
-    /// </summary>
-    /// <param name="value">The value</param>
-    /// <param name="priority">The priority</param>
-    public void Enqueue(string value, int priority)
+    private class QueueItem
     {
-        var newNode = new PriorityItem(value, priority);
-        _queue.Add(newNode);
-    }
-
-public string Dequeue()
-{
-    if (_queue.Count == 0) // Verify the queue is not empty
-    {
-        throw new InvalidOperationException("The queue is empty.");
-    }
-
-    // Find the index of the item with the highest priority to remove
-    var highPriorityIndex = 0;
-    for (int index = 1; index < _queue.Count; index++) // Fixed off-by-one error
-    {
-        if (_queue[index].Priority > _queue[highPriorityIndex].Priority)
+        public string Value { get; }
+        public int Priority { get; }
+        public QueueItem(string value, int priority)
         {
-            highPriorityIndex = index;
+            Value = value;
+            Priority = priority;
         }
     }
 
-    var value = _queue[highPriorityIndex].Value;
+    private List<QueueItem> items = new List<QueueItem>();
 
-    // Remove the item from the queue (FIFO is preserved automatically by using index)
-    _queue.RemoveAt(highPriorityIndex);
-
-    return value;
-}
-
-
-    public override string ToString()
+    // Enqueue: Add to the back of the queue
+    public void Enqueue(string value, int priority)
     {
-        return $"[{string.Join(", ", _queue)}]";
-    }
-}
-
-internal class PriorityItem
-{
-    internal string Value { get; set; }
-    internal int Priority { get; set; }
-
-    internal PriorityItem(string value, int priority)
-    {
-        Value = value;
-        Priority = priority;
+        items.Add(new QueueItem(value, priority));
     }
 
+    // Dequeue: Remove and return the value with the highest priority (FIFO for ties)
+    public string Dequeue()
+    {
+        if (items.Count == 0)
+            throw new InvalidOperationException("The queue is empty.");
+
+        int maxPriority = int.MinValue;
+        int index = -1;
+        // Find the first item with the highest priority
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].Priority > maxPriority)
+            {
+                maxPriority = items[i].Priority;
+                index = i;
+            }
+        }
+        string result = items[index].Value;
+        items.RemoveAt(index);
+        return result;
+    }
+
+    // Override ToString() to show queue contents
     public override string ToString()
     {
-        return $"{Value} (Pri:{Priority})";
+        if (items.Count == 0)
+            return "[]";
+        var parts = new List<string>();
+        foreach (var item in items)
+        {
+            parts.Add($"{item.Value}:{item.Priority}");
+        }
+        return "[" + string.Join(", ", parts) + "]";
     }
 }
